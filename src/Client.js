@@ -42,13 +42,16 @@ phina.define('GameScene', {
         socket.emit('JoinRoom', {'playerName': playerName, 'roomId': roomId, 'roomName': roomName, 'passWord': passWord});
         waitingSceneMessage = '入室しています...';
         let waitingScene = WaitingScene(options);
+        setTimeout(() => {
+            app.pushScene(waitingScene);
+        }, 100); 
         socket.on('JoinDenied', message => {
-            setTimeout(() => { waitingScene.exit(); }, 100);
+            setTimeout(() => { waitingScene.exit(); }, 500);
             pauseSceneMessage = message;
             app.pushScene(PauseScene(options));
         });
         socket.on('ReplyJoin', roomId => {
-            console.log("JOIN");
+            setTimeout(() => { waitingScene.exit(); }, 500);
         });
     }
 });
@@ -66,9 +69,8 @@ phina.define('WaitingScene', {
 
 phina.define('PauseScene', {
     superClass: 'DisplayScene',
-    init: function(options, message) {
+    init: function(options) {
         this.superInit(options);
-        OPTIONS = options;
         this.backgroundColor = 'rgba(0, 0, 0, 0.7)';
         self = this;
         createLabel(this, pauseSceneMessage, this.gridX.center(), this.gridY.center(), 'white', 32, false);
@@ -111,8 +113,11 @@ phina.define('CreateRoomScene', {
                 socket.emit('CreateRoom', {'roomName': room_Name, 'passWord': pass_Word});
                 waitingSceneMessage = '部屋を作成しています...';
                 let waitingScene = WaitingScene(options);
+                app.pushScene(waitingScene);
                 socket.on('ReplyRoomId', roomId => {
-                    waitingScene.exit();
+                    setTimeout(() => {
+                        waitingScene.exit();
+                    }, 500);
                     transitionToGame(roomId, room_Name, pass_Word);
                 });
                 
@@ -157,14 +162,19 @@ phina.define('TitleScene', {
         this.updateRoom_btn.onpointend = () => {
             this.updateRoom(this);
         }
-        this.updateRoom(this);
+        setTimeout(() => {
+            this.updateRoom(this);
+        }, 200); 
         
     },
     updateRoom: (self) => {
         waitingSceneMessage = '部屋を取得しています...';
         let scene = WaitingScene(optionsPhina);
+        self.app.pushScene(scene);
         socket.on('ReplyGetRooms', rooms => {
-            scene.exit();
+            setTimeout(() => {
+                scene.exit();
+            }, 500); 
             let x = 100;
             let y = 100;
             for(let i = 0, l = rooms.length; i < l; i++) {
